@@ -1,5 +1,11 @@
+import TaskManager from "./components/TaskManager"
+
 const App = () => {
-  return <div>App</div>
+  return (
+    <>
+      <TaskManager />
+    </>
+  )
 }
 
 export default App
