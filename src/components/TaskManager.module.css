@@ -1,0 +1,10 @@
+.wrapper {
+  width: 100vw;
+  display: grid;
+  justify-items: center;
+  gap: 2rem;
+}
+
+.buttonLeft {
+  margin-right: 2rem;
+}

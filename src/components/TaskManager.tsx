@@ -1,5 +1,6 @@
 import { FormEvent, useCallback, useMemo, useState } from "react"
 import { Task } from "../types/types"
+import styles from "./TaskManager.module.css"
 
 const TaskManager = () => {
   const [tasks, setTasks] = useState<Task[]>([])
@@ -7,15 +8,17 @@ const TaskManager = () => {
   const [newDescription, setNewDescription] = useState("")
   const [searchTerm, setSearchTerm] = useState("")
 
-  const filteredTasks = useMemo(
-    () =>
-      tasks.filter(
-        (task) =>
-          task.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          task.description.toLowerCase().includes(searchTerm.toLowerCase())
-      ),
-    [tasks, searchTerm]
-  )
+  // Cache (memoize) filtered list until dependencies change
+  const filteredTasks = useMemo(() => {
+    const searchLower = searchTerm.toLowerCase()
+
+    // Check both title and description
+    return tasks.filter(
+      (task) =>
+        task.title.toLowerCase().includes(searchLower) ||
+        task.description.toLowerCase().includes(searchLower)
+    )
+  }, [tasks, searchTerm]) // Recalculate when these change
 
   const { total, completed } = useMemo(
     () => ({
@@ -30,8 +33,8 @@ const TaskManager = () => {
       prevTask.map((task) =>
         task.id === taskId
           ? {
-              ...task,
-              completed: !task.completed,
+              ...task, // Copy existing properties
+              completed: !task.completed, // Override this property
             }
           : task
       )
@@ -39,20 +42,22 @@ const TaskManager = () => {
   }, [])
 
   const deleteTask = useCallback((taskId: number) => {
-    setTasks((prevTask) => prevTask.filter((task) => task.id !== taskId))
+    setTasks((prevTask) => prevTask.filter((task) => task.id !== taskId)) // Keep tasks that DON'T match the ID
   }, [])
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault()
 
+    // User might enter only whitespace - .trim() removes whitespace from both ends
     if (!newTitle.trim()) return
 
+    // Create new array with existing items + new task
     setTasks((prevTask) => [
       ...prevTask,
       {
         id: Date.now(),
-        title: newTitle,
-        description: newDescription,
+        title: newTitle.trim(), // Clean input
+        description: newDescription.trim(), // Clean textarea
         completed: false,
       },
     ])
@@ -62,7 +67,7 @@ const TaskManager = () => {
   }
 
   return (
-    <div>
+    <div className={styles.wrapper}>
       <h1>Task Manager</h1>
 
       <input
@@ -72,7 +77,7 @@ const TaskManager = () => {
         placeholder="Search tasks ..."
       />
 
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className={styles.wrapper}>
         <input
           type="text"
           value={newTitle}
@@ -108,7 +113,10 @@ const TaskManager = () => {
 
             <p>{task.description}</p>
 
-            <button onClick={() => toggleComplete(task.id)}>
+            <button
+              className={styles.buttonLeft}
+              onClick={() => toggleComplete(task.id)}
+            >
               {task.completed ? "Undo" : "Complete"}
             </button>
 
